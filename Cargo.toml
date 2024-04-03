@@ -13,7 +13,7 @@ description = "SmartModule Core Library"
 json = "0.12.4"
 lazy_static = "1.4.0"
 
-smdton = "*"
+smdton = "0.1.0"
 # smdton = { path = "../smdton" }
 
 [lib]
