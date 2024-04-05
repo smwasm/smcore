@@ -1,6 +1,6 @@
 [package]
 name = "smcore"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["smwasm@outlook.com"]
 repository = "https://github.com/smwasm/smcore.git"
@@ -13,8 +13,8 @@ description = "SmartModule Core Library"
 json = "0.12.4"
 lazy_static = "1.4.0"
 
-smdton = "0.1.0"
-# smdton = { path = "../smdton" }
+smdton = "0.1.1"
+# smdton = { path = "../smdton" } ## switch
 
 [lib]
 crate-type = ["rlib", "cdylib"]
