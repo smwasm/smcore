@@ -1,5 +1,5 @@
 use json::JsonValue;
-use smdton::{SmDtonBuffer, SmDtonBuilder};
+use smdton::{SmDtonMap, SmDtonBuffer, SmDtonBuilder};
 
 use crate::for_rust;
 use crate::smgv::SM_WASM;
@@ -31,6 +31,12 @@ impl SmUtil {
     pub fn build_buffer(&self, define: &JsonValue) -> SmDtonBuffer {
         let mut db = SmDtonBuilder::new_from_json(define);
         return db.build();
+    }
+
+    pub fn new_sm_map<'a>(&self, value: &'a str) -> SmDtonMap<'a> {
+        let mut obj = SmDtonMap::new();
+        obj.add_string("$usage", value);
+        return obj;
     }
 
     pub fn get_string(&self, jsn: &JsonValue, key: &str) -> Option<String> {

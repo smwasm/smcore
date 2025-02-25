@@ -1,6 +1,6 @@
-use smdton::{SmDtonBuffer, SmDtonPair};
+use smdton::SmDtonBuffer;
 
-pub type SmMethod = fn(&SmDtonPair) -> SmDtonBuffer;
+pub type SmMethod = fn(&SmDtonBuffer) -> SmDtonBuffer;
 
 pub struct SmItem {
     pub define: SmDtonBuffer,

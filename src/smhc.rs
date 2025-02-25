@@ -1,5 +1,5 @@
 use json::JsonValue;
-use smdton::{SmDton, SmDtonBuffer, SmDtonBuilder, SmDtonMap, SmDtonPair};
+use smdton::{SmDton, SmDtonBuffer, SmDtonBuilder, SmDtonMap};
 
 use crate::smgv::{SM_CALLOUT, SM_TABLE};
 use crate::smitem::{SmItem, SmMethod};
@@ -7,7 +7,6 @@ use crate::smker::check_ker;
 use crate::smuc::SMU as smu;
 
 static SM_USAGE: &str = "$usage";
-static SM_CASE: &str = "$case";
 
 fn _could_callout() -> bool {
     return *SM_CALLOUT.read().unwrap();
@@ -54,84 +53,27 @@ impl SmHub {
         return self.register(smu.build_buffer(define), method);
     }
 
-    pub fn add_case(&self, define: &SmDtonBuffer) -> bool {
-        let sd = SmDton::new_from_buffer(define);
-        let op1 = sd.get_string(SM_USAGE);
-        let op2 = sd.get_string(SM_CASE);
-        if op1.is_none() || op2.is_none() {
-            return false;
-        }
-        let _usage = op1.unwrap();
-        let _case = op2.unwrap();
-        if _usage == "" || _case == "" {
-            return false;
-        }
-
-        let mut _m = SM_TABLE.write().unwrap();
-        let _op3 = _m.get(&_usage);
-        match _op3 {
-            Some(_usage_item) => {
-                let pair = SmDtonPair::new(_usage_item.define.clone(), define.clone());
-                let sd_raw = SmDton::new_from_pair(&pair);
-                let optxt = sd_raw.stringify();
-                if optxt.is_none() {
-                    return false;
-                }
-                let para = optxt.unwrap();
-                let opjsn = json::parse(&para);
-                if opjsn.is_err() {
-                    return false;
-                }
-                let jsn = opjsn.unwrap();
-                let mut smbd = SmDtonBuilder::new_from_json(&jsn);
-                let smb = smbd.build();
-
-                smu.log(&format!("--- sm addcase --- {} --- {}", _case, para));
-                let _item = SmItem {
-                    define: smb,
-                    method: _usage_item.method,
-                };
-                _m.insert(_case, _item);
-                return true;
-            }
-            _ => {}
-        }
-
-        return false;
-    }
-
-    pub fn get(&self, name: &str) -> SmDtonBuffer {
-        let _m = SM_TABLE.read().unwrap();
-        let _op = _m.get(name);
-        match _op {
-            Some(_item) => {
-                if smu.is_debug() {
-                    let sd = SmDton::new_from_buffer(&_item.define);
-                    smu.log(&format!(
-                        "--- sm get --- {} --- {}",
-                        name,
-                        sd.stringify().unwrap()
-                    ));
-                }
-                return _item.define.clone();
+    pub fn call(&self, input: SmDtonBuffer) -> SmDtonBuffer {
+        let _dt_in = SmDton::new_from_buffer(&input);
+        let _op_name = _dt_in.get_string(SM_USAGE);
+        let name;
+        match _op_name {
+            Some(_name) => {
+                name = _name;
             }
             _ => {
-                smu.log(&format!("--- sm get --- nothing --- {} ---", name));
                 return SmDtonBuffer::new();
             }
         }
-    }
 
-    pub fn call(&self, name: &str, input: SmDtonBuffer) -> SmDtonBuffer {
         let _m = SM_TABLE.read().unwrap();
-        let _op = _m.get(name);
+        let _op = _m.get(&name);
         match _op {
             Some(_item) => {
-                let pair = SmDtonPair::new(_item.define.clone(), input);
                 let _method = _item.method;
-                let _ret = _method(&pair);
+                let _ret = _method(&input);
                 if smu.is_debug() {
-                    let sd1 = SmDton::new_from_pair(&pair);
+                    let sd1 = SmDton::new_from_buffer(&input);
                     let sd2 = SmDton::new_from_buffer(&_ret);
                     smu.log(&format!(
                         "--- sm call --- {} --- {} --- {}",
@@ -148,11 +90,10 @@ impl SmHub {
                     match _op2 {
                         Some(_item) => {
                             let mut smp = SmDtonMap::new();
-                            smp.add_string("name", name);
-                            let pair = SmDtonPair::new(smp.build(), input);
+                            smp.add_string("name", &name);
 
                             let _method = _item.method;
-                            let _ret = _method(&pair);
+                            let _ret = _method(&input);
                             return _ret;
                         }
                         _ => {
@@ -171,7 +112,7 @@ impl SmHub {
 
 pub static SMH: SmHub = SmHub {};
 
-pub fn sm_get_all(_input: &SmDtonPair) -> SmDtonBuffer {
+pub fn sm_get_all(_input: &SmDtonBuffer) -> SmDtonBuffer {
     smu.log(&format!("--- smo --- smker.get.all ---"));
     let mut _jsn = JsonValue::new_object();
     let _m = SM_TABLE.read().unwrap();
