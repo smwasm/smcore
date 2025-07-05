@@ -1,3 +1,4 @@
+use std::panic;
 use json::JsonValue;
 use smdton::{SmDton, SmDtonBuffer, SmDtonBuilder, SmDtonMap};
 
@@ -5,6 +6,7 @@ use crate::smgv::{SM_CALLOUT, SM_TABLE};
 use crate::smitem::{SmItem, SmMethod};
 use crate::smker::check_ker;
 use crate::smuc::SMU as smu;
+use crate::smuc::need_catch;
 
 static SM_USAGE: &str = "$usage";
 
@@ -71,7 +73,33 @@ impl SmHub {
         match _op {
             Some(_item) => {
                 let _method = _item.method;
-                let _ret = _method(&input);
+                let mut _ret: SmDtonBuffer;
+                if need_catch() {
+                    let result = panic::catch_unwind(|| {
+                        let _try_ret = _method(&input);
+                        _try_ret
+                    });
+
+                    match result {
+                        Ok(_try_ret) => {
+                            _ret = _try_ret;
+                        }
+                        Err(_panic_err) => {
+                            let panic_str = if let Some(s) = _panic_err.downcast_ref::<&str>() {
+                                (*s).to_string()
+                            } else if let Some(s) = _panic_err.downcast_ref::<String>() {
+                                s.clone()
+                            } else {
+                                "Unknown panic".to_string()
+                            };
+                            let mut smap = SmDtonMap::new();
+                            smap.add_string("$panic", &panic_str);
+                            _ret = smap.build();
+                        }
+                    }
+                } else {
+                    _ret = _method(&input);
+                }
                 if smu.is_debug() {
                     let sd1 = SmDton::new_from_buffer(&input);
                     let sd2 = SmDton::new_from_buffer(&_ret);

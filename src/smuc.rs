@@ -8,6 +8,7 @@ use crate::ISmCoreSupport;
 pub struct SmOption {
     support: Option<Box<dyn ISmCoreSupport>>,
     wasm_type: i32,
+    catch: bool,
     in_debug: bool,
 }
 
@@ -16,9 +17,14 @@ impl SmOption {
         SmOption {
             support: None,
             wasm_type: 0,
+            catch: false,
             in_debug: false,
         }
     }
+}
+
+pub fn need_catch() -> bool {
+    return SM_WASM.read().unwrap().catch;
 }
 
 pub struct SmUtil {}
@@ -59,6 +65,7 @@ impl SmUtil {
             if wasm_type < 10 && support.is_none() {
                 let s = for_rust::SmSupportForRust {};
                 smo.support = Some(Box::new(s));
+                smo.catch = true;
             } else {
                 smo.support = support;
             }

@@ -1,6 +1,6 @@
 [package]
 name = "smcore"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 authors = ["smwasm@outlook.com"]
 repository = "https://github.com/smwasm/smcore.git"
