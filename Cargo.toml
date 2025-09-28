@@ -1,6 +1,6 @@
 [package]
 name = "smcore"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 authors = ["smwasm@outlook.com"]
 repository = "https://github.com/smwasm/smcore.git"
@@ -11,9 +11,9 @@ description = "SmartModule Core Library"
 
 [dependencies]
 json = "0.12.4"
-lazy_static = "1.4.0"
+lazy_static = "1.5.0"
 
-smdton = "0.1.2"
+smdton = "0.1.3"
 
 [lib]
 crate-type = ["rlib", "cdylib"]
