@@ -63,7 +63,7 @@ impl SmUtil {
             let mut smo = SM_WASM.write().unwrap();
             smo.wasm_type = wasm_type;
             if wasm_type < 10 && support.is_none() {
-                let s = for_rust::SmSupportForRust {};
+                let s = for_rust::SmSupportForRust {wasm_type: wasm_type};
                 smo.support = Some(Box::new(s));
                 smo.catch = true;
             } else {
